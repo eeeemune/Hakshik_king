@@ -1,6 +1,5 @@
 from flask import Flask, render_template, jsonify, redirect, url_for, request
 import requests
-# from config import app_token, bot_token, channel_id, url
 from config import url
 import bs4
 import datetime
