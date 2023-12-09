@@ -1,13 +1,18 @@
-from flask import Flask, render_template, jsonify, redirect, url_for, request
-import requests
 from config import url
 import bs4
 import datetime
-from pytz import timezone
 import json
 import tabula
 import pandas as pd
 import re
+from openai import OpenAI
+import os
+from dotenv import load_dotenv
+import requests
+from bs4 import BeautifulSoup
+import boto3
+from boto3.dynamodb.conditions import Key, Attr
+import deepl
 
 
 class Shik_thisweek:
@@ -15,6 +20,9 @@ class Shik_thisweek:
     where = ""
 
     def __init__(self) -> None:
+        self.update_me()
+
+    def update_me(self):
         pass
 
     def save_my_data(self):
@@ -25,7 +33,7 @@ class Shik_thisweek:
     def set_shik(self, data):
         self.data = data
 
-    def get_shik(self, when):
+    def get_shik(self, when="all"):
         if (when == "all"):
             return self.data
         else:
@@ -62,7 +70,7 @@ class Gishik_thisweek(Shik_thisweek):
         self.data = self.get_gishik_json_of_this_week(where=self.where)
 
         # Save data in "meal/inha_dimitory.json".
-        self.save_my_data()
+        # self.save_my_data()
 
     def get_gishik_json_of_this_week(self, where):
         # Download hakshik pdf and parse to json
@@ -295,17 +303,6 @@ class Hakshik_thisweek(Shik_thisweek):
         # save json of this week in local
         self.save_my_data()
 
-    # def get_hakshik_json_of_this_week(self):
-    #     # returns weekly hakshik menu as a json file
-    #     html_doc = self.get_html_doc(self.where)
-    #     this_week_json_dict = {"Monday": {"breakfast": [], "lunch": [], "dinner": []}, "Tuesday": {"breakfast": [], "lunch": [], "dinner": []}, "Wednesday": {"breakfast": [], "lunch": [], "dinner": []},
-    #                            "Thursday": {"breakfast": [], "lunch": [], "dinner": []}, "Friday": {"breakfast": [], "lunch": [], "dinner": []}, "Saturday": {"breakfast": [], "lunch": [], "dinner": []}, "Sunday": {"breakfast": [], "lunch": [], "dinner": []}}
-    #     for today in ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]:
-    #         today_json = self.parse_meal_json_today(html_doc, weekday=today)
-    #         this_week_json_dict[today] = today_json
-
-    #     return this_week_json_dict
-
     def parse_meal_json_today(self, html_doc, weekday):
         def meal_list(weekday, when_idx, soup):
             day_of_week_idx = -1
@@ -321,14 +318,14 @@ class Hakshik_thisweek(Shik_thisweek):
             if (weekday == "Friday"):
                 day_of_week_idx = 4
 
-            index_to_parse = 4*day_of_week_idx + when_idx
+            index_to_parse = 2*day_of_week_idx + when_idx
 
             menu_html = soup.find_all("table")[index_to_parse].find_all('tr')
 
             menu_list = []
             for i in range(len(menu_html)):
                 if (i != 0):
-                    menu = {"category": menu_html[i].find_all("th")[0].text.strip(), "menu": menu_html[i].find_all(
+                    menu = {"category": menu_html[i].find_all("th")[0].text.strip(), "meal_arr": menu_html[i].find_all(
                         "td")[0].text.strip().split('\r')}
                     menu_list.append(menu)
 
@@ -337,7 +334,7 @@ class Hakshik_thisweek(Shik_thisweek):
         html_soup = bs4.BeautifulSoup(html_doc, "html.parser",
                                       from_encoding='utf-8')
         today_meal = {"breakfast": [], "lunch": [], "dinner": []}
-        for idx, when in enumerate(["breakfast", "lunch", "self",  "dinner"]):
+        for idx, when in enumerate(["lunch", "self"]):
             meal_node = meal_list(weekday, idx, html_soup)
             today_meal[when] = meal_node
         return today_meal
@@ -372,7 +369,7 @@ class Gyoshik_thisweek(Hakshik_thisweek):
             menu_list = []
             for i in range(len(menu_html)):
                 if (i != 0):
-                    menu = {"category": menu_html[i].find_all("th")[0].text.strip(), "menu": menu_html[i].find_all(
+                    menu = {"category": menu_html[i].find_all("th")[0].text.strip(), "meal_arr": menu_html[i].find_all(
                         "td")[0].text.strip().replace("\r", "").split('\t\t')}
                     menu_list.append(menu)
 
@@ -382,74 +379,129 @@ class Gyoshik_thisweek(Hakshik_thisweek):
                                       from_encoding='utf-8')
         today_meal = {"breakfast": [], "lunch": [], "dinner": []}
         meal_node = meal_list(weekday, 0, html_soup)
-        # for idx, when in enumerate(["breakfast", "lunch", "self",  "dinner"]):
-        #     meal_node = meal_list(weekday, idx, html_soup)
-        #     today_meal[when] = meal_node
-        today_meal["breakfast"] = meal_node[0]
+
+        today_meal["breakfast"] = [meal_node[0]]
         today_meal["lunch"] = meal_node[1:3]
-        today_meal["dinner"] = meal_node[3]
+        today_meal["dinner"] = [meal_node[3]]
         return today_meal
 
 
-# gishik_week_instance = Gishik_thisweek()
-# gishik_week_instance.update_me()
-# print(gishik_week_instance.get_shik(when="all"))
+class Dscrpt:
+    client = None
+
+    def __init__(self):
+        load_dotenv()
+        self.client = OpenAI(api_key=os.getenv('chatgpt_token'))
+
+    def of(self, foodname):
+        completion = self.client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {"role": "system",
+                 "content": "Make some discription of the food upto 100 letters in Korean."},
+                {"role": "user", "content": ", " .join(foodname)}
+            ]
+        )
+        return completion.choices[0].message.content
 
 
-# hakshik_week_instance = Hakshik_thisweek()
-# hakshik_week_instance.update_me()
-# print(hakshik_week_instance.get_shik(when="all"))
+class Recipe:
+    def __init__(self):
+        load_dotenv()
+        self.man_recipe_url = os.getenv('man_recipe_url')
+
+    def of(self, food):
+        '''
+        This is function gives recipe of the food recieved and information whether allergy trigger is included
+
+        (input)
+        food: name of food, in a word
+
+        (output)
+        {"recipe":["A", "B"...], "url":https://www.10000recipe.com/recipe/xxxxxx,  "allergy":{fork:"true", "egg":false, "beef":True, "chicken":true, "seafood":true}}
+        '''
+
+        '''
+        item_id: id of the first item(the highest accuracy)
+        '''
+        url = self.man_recipe_url + f"/recipe/list.html?q={food}&accracy=date"
+        page_doc = requests.get(url)
+        page_soup = BeautifulSoup(page_doc.text, "html.parser")
+        item_url = page_soup.select_one(".common_sp_link")
+        item_id = None
+        if (item_url == None):
+            return None
+        else:
+            item_id = item_url.attrs.get("href").split('/')[-1]
+
+        '''
+        item_json: json parsed from document, includes noise
+        '''
+        url_of_item = f'{self.man_recipe_url}/recipe/{item_id}'
+        item_doc = requests.get(url_of_item)
+        item_soup = BeautifulSoup(item_doc.text, "html.parser")
+        item_json = json.loads(item_soup.find(
+            attrs={'type': 'application/ld+json'}).text)
+
+        '''
+        recipe: indegrants of the food. array form. ex)["돼지고기", "양파"]
+        '''
+        recipe = item_json.get('recipeIngredient')
+        if (recipe == None):
+            recipe = []
+
+        '''
+        allergy: true when the recipe includes xxx
+        '''
+        allergy_json = {"fork": False, "egg": False,
+                        "beef": False, "chicken": False, "seafood": False}
+        recipe_str = "".join(recipe)
+        if (-1 < recipe_str.find("돼지") or -1 < recipe_str.find("돈육") or -1 < recipe_str.find("겹살") or -1 < recipe_str.find("목살") or -1 < recipe_str.find("항정살") or -1 < recipe_str.find("소세지") or -1 < recipe_str.find("소시지") or -1 < recipe_str.find("비엔나") or -1 < recipe_str.find("스팸") or -1 < recipe_str.find("햄") or -1 < recipe_str.find("미니족") or -1 < recipe_str.find("장족") or -1 < recipe_str.find("베이컨")):
+            allergy_json["fork"] = True
+        if (-1 < recipe_str.find("계란") or -1 < recipe_str.find("메추리알") or -1 < recipe_str.find("닭알") or -1 < recipe_str.find("수란")):
+            allergy_json["egg"] = True
+        if (-1 < recipe_str.find("닭") or -1 < recipe_str.find("치킨")):
+            allergy_json["chicken"] = True
+        if (-1 < recipe_str.find("소고기") or -1 < recipe_str.find("차돌박이") or -1 < recipe_str.find("사골") or -1 < recipe_str.find("우족") or -1 < recipe_str.find("곰탕") or -1 < recipe_str.find("한우") or -1 < recipe_str.find("와규") or -1 < recipe_str.find("갈비") or -1 < recipe_str.find("다시다")):
+            allergy_json["beef"] = True
+        if (-1 < recipe_str.find("새우") or -1 < recipe_str.find("게")):
+            allergy_json["seafood"] = True
+
+        res = {"recipe": recipe, "url": url_of_item,
+               "allergy_json": allergy_json}
+
+        return res
 
 
-# gyoshik_week_instance = Gyoshik_thisweek()
-# gyoshik_week_instance.update_me()
-# print(gyoshik_week_instance.get_shik(when="all"))
+class DB:
+    def __init__(self):
+        aws_access_key = os.getenv('aws_access_key')
+        aws_access_private = os.getenv('aws_access_key_private')
+
+        dynamodb = boto3.resource('dynamodb', region_name='ap-northeast-1',
+                                  aws_access_key_id=aws_access_key, aws_secret_access_key=aws_access_private)
+        self.table = dynamodb.Table('hakshikking')
+
+    def save(self, name, date,  location, when, category="", name_eng="", recipe="", url="", chicken="", beef="", fork="", egg="", seafood="", dscrpt="", dscrpt_eng=""):
+        res = self.table.put_item(
+            Item={
+                "name": name, "date": f"{date}#{when}", "category": category, "location": location, "category": category, "name_eng": str(name_eng), "recipe": recipe, "url": url, "chicken": chicken, "beef": beef, "fork": fork, "egg": egg, "seafood": seafood, "dscrpt": str(dscrpt), "dscrpt_eng": str(dscrpt_eng)
+            }
+        )
+        return res
+
+    def find(self, name):
+        res = self.table.query(
+            KeyConditionExpression=Key('name').eq(
+                name)
+        )
+        return res.get('Items')
 
 
-# print({"hak": hakshik_week_instance.get_shik(when="all"), "gi": gishik_week_instance.get_shik(
-#     when="all"), "gyo": gyoshik_week_instance.get_shik(when="all")})
+class Translator:
+    def __init__(self):
+        self.deepl_token = os.getenv('deepl_token')
 
-
-web = Flask(__name__)
-web.config['JSON_AS_ASCII'] = False
-
-
-@web.get('/')
-def index():
-    gishik_week_instance = Gishik_thisweek()
-    gishik_week_instance.update_me()
-
-    hakshik_week_instance = Hakshik_thisweek()
-    hakshik_week_instance.update_me()
-
-    gyoshik_week_instance = Gyoshik_thisweek()
-    gyoshik_week_instance.update_me()
-
-    return {"hak": hakshik_week_instance.get_shik(when="all"), "gi": gishik_week_instance.get_shik(
-        when="all"), "gyo": gyoshik_week_instance.get_shik(when="all")}
-
-
-# @web.get('/init')
-# def init():
-#     res = program_init()
-#     return res
-
-
-# @web.get('/get')
-# def get_week():
-#     where = request.args.get('where')
-#     data = "ERROR"
-#     if (where == "hak"):
-#         data = hakshik_week_instance.get_shik(when="all")
-#     elif (where == "gi"):
-#         data = gishik_week_instance.get_shik(when="all")
-#     elif (where == "gyo"):
-#         data = gyoshik_week_instance.get_shik(when="all")
-#     else:
-#         data = {"hak": hakshik_week_instance.get_shik(when="all"), "gi":
-#                 gishik_week_instance.get_shik(when="all"), "gyo": gyoshik_week_instance.get_shik(when="all")}
-#     data = str(data)
-#     return data
-
-if __name__ == "__main__":
-    web.run("0.0.0.0", port=5000, debug=False)
+    def eng(self, korean_word):
+        translator = deepl.Translator(self.deepl_token)
+        return str(translator.translate_text(korean_word, source_lang="KO", target_lang="EN-US", context="food name/romanize"))
