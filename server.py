@@ -72,7 +72,8 @@ class Gishik_thisweek(Shik_thisweek):
             "body > div > div.artclItem.viewForm > dl > dd > ul > li:nth-child(1) > a")['href']
         url = f'https://dorm.inha.ac.kr/{pdf_url}'
 
-        path_to_save_pdf = f'./gishiks/{datetime.date.today().strftime("gishik_%Y-%m-%S")}.pdf'
+        path_to_save_pdf = f'./gishiks/{
+            datetime.date.today().strftime("gishik_%Y-%m-%S")}.pdf'
         download_pdf(url, path_to_save_pdf)
 
         return path_to_save_pdf
@@ -366,17 +367,20 @@ def parse_json_to_message(json_data, today_of_week):
     today_gi = json_data['gi'].get(today_of_week)
 
     if (today_hak != ''):
-        hak_message = f'*학생식당*\n\n✨ 조식 ✨\n{today_hak["breakfast"]}\n\n☀ 중식 ☀\n{today_hak["lunch"]}\n\n🌙 석식 🌙\n{today_hak["dinner"]}\n\n\n'
+        hak_message = f'*학생식당*\n\n✨ 조식 ✨\n{today_hak["breakfast"]}\n\n☀ 중식 ☀\n{
+            today_hak["lunch"]}\n\n🌙 석식 🌙\n{today_hak["dinner"]}\n\n\n'
     else:
         hak_message = f'*학생식당*\n식사를 제공하지 않는 날입니다.\n'
     if (today_gyo != ''):
         today_gyo = today_gyo.get('breakfast').replace("\t\t", "").split('\n')
         today_gyo = [item for item in today_gyo if item != ""]
-        gyo_message = f'*교직원식당*\n\n✨ 조식 ✨\n{today_gyo[0]}\n{today_gyo[1]}\n\n☀ 중식 ☀\n{today_gyo[2]}\n(백반)\n{today_gyo[3]}\n\n(특식)\n{today_gyo[5]}\n\n\n🌙 석식 🌙\n{today_gyo[6]}\n{today_gyo[7]}\n\n\n'
+        gyo_message = f'*교직원식당*\n\n✨ 조식 ✨\n{today_gyo[0]}\n{today_gyo[1]}\n\n☀ 중식 ☀\n{
+            today_gyo[2]}\n(백반)\n{today_gyo[3]}\n\n(특식)\n{today_gyo[5]}\n\n\n🌙 석식 🌙\n{today_gyo[6]}\n{today_gyo[7]}\n\n\n'
     else:
         gyo_message = f'*교직원식당*\n식사를 제공하지 않는 날입니다.\n'
     if (today_gi != ''):
-        gi_message = f'*생활관식당*\n\n✨ 조식 ✨\n{today_gi["breakfast"]}\n\n☀ 중식 ☀\n{today_gi["lunch"]}\n\n🌙 석식 🌙\n{today_gi["dinner"]}\n\n🌭 간편식 🌭\n{today_gi["easy_meal"]}\n\n\n'
+        gi_message = f'*생활관식당*\n\n✨ 조식 ✨\n{today_gi["breakfast"]}\n\n☀ 중식 ☀\n{
+            today_gi["lunch"]}\n\n🌙 석식 🌙\n{today_gi["dinner"]}\n\n🌭 간편식 🌭\n{today_gi["easy_meal"]}\n\n\n'
     else:
         gi_message = f'*생활관식당*\n식사를 제공하지 않는 날입니다.\n'
     return f'✉ 학식왕 김인하 - {today()} 식단 ✉\n\n\n{hak_message}\n{gyo_message}\n{gi_message}식사 맛있게 하세요!'
