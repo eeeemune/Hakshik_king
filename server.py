@@ -1,6 +1,5 @@
 from flask import Flask, render_template, jsonify, redirect, url_for, request
 import requests
-# from config import app_token, bot_token, channel_id, url
 from config import url
 import bs4
 import datetime
@@ -49,7 +48,8 @@ class Gishik_thisweek(Shik_thisweek):
         self.save_my_data()
 
     def get_gishik_json_of_this_week(self):
-        pdf_path = self.get_gishik_pdf()
+        # pdf_path = self.get_gishik_pdf()
+        pdf_path = './gogo.pdf'
         this_week_json = self.parse_this_week_json(pdf_path)
         return this_week_json
 
@@ -72,7 +72,8 @@ class Gishik_thisweek(Shik_thisweek):
             "body > div > div.artclItem.viewForm > dl > dd > ul > li:nth-child(1) > a")['href']
         url = f'https://dorm.inha.ac.kr/{pdf_url}'
 
-        path_to_save_pdf = f'./gishiks/{datetime.date.today().strftime("gishik_%Y-%m-%S")}.pdf'
+        path_to_save_pdf = f'./gishiks/{
+            datetime.date.today().strftime("gishik_%Y-%m-%S")}.pdf'
         download_pdf(url, path_to_save_pdf)
 
         return path_to_save_pdf
@@ -84,25 +85,52 @@ class Gishik_thisweek(Shik_thisweek):
                 word) != type(0.0) or type(word) != type("0")]
             return filtered_list
 
-        def makeup_string(target_str):
-            target_str = target_str.replace('\n', ' ')
-            target_str = target_str.replace('\r', ', ')
+        def package_meal(_target_string, _seperator, _is_easymeal):
+
+            arr = _target_string.split("CATEGORY")
+            meal_node_container = []
+            for string in arr:
+                meal_arr = string.split(_seperator)
+
+                meal_arr = [target for target in meal_arr if target != '']
+                if (meal_arr == []):
+                    pass
+                else:
+                    if (_is_easymeal):
+                        meal_node_container.append(
+                            {"category": "간편식", "meal_arr": meal_arr})
+                        break
+                    else:
+                        meal_node_container.append(
+                            {"category": meal_arr[0], "meal_arr": meal_arr[1:]})
+            return meal_node_container
+
+        def makeup_string(target_str, seperator):
+            target_str = target_str.replace('\r', seperator)
+
+            target_str = target_str.replace('\n', seperator)
             target_str = target_str.replace('nan', "")
-            target_str = target_str.replace('일품식', "\n일품식")
+            target_str = target_str.replace('일품식', f"CATEGORY일품식")
             target_str = target_str.replace('요청', "")
             target_str = target_str.replace('NEW', "")
             target_str = target_str.replace("r'(?<=\D)(?=\d{3}\b)'", "")
             target_str = target_str.replace("self 라면", "")
-            target_str = target_str.replace("라면/밥/김치", "")
-            target_str = target_str.replace("한 식 ", "한식\n")
+            target_str = target_str.replace("라면/ 쌀밥/ 김치", "")
+            target_str = target_str.replace("한  식", f"CATEGORY한식")
+            target_str = target_str.replace("<메인 선택>", "")
+            target_str = target_str.replace("< 특식>", "")
+            target_str = target_str.replace("뚝)", "")
+            target_str = target_str.replace("S", " 소스")
+            target_str = target_str.replace("D", " 드레싱")
+            target_str = target_str.replace(" 드레싱AY", "DAY")
             return target_str
 
-        def replace_separator(before, after, array):
-            new_list = [before if word == after else word for word in array]
-            return new_list
+        # def replace_separator(before, after, array):
+        #     new_list = [before if word == after else word for word in array]
+        #     return new_list
 
-        def replace_word_in_array(before, array):
-            replace_separator(before, "|", array)
+        # def replace_word_in_array(before, array):
+        #     replace_separator(before, "|", array)
 
         def correct_arr(array_to_splite):
             seperator = r'\d{2,}'
@@ -118,20 +146,7 @@ class Gishik_thisweek(Shik_thisweek):
             # array_to_splite = [item for item in array_to_splite if '\r' in item]
             return sublists
 
-        def is_nan(target_str):
-            nan_cnt = 0
-            target_arr = target_str.split("\n")
-            for element in target_arr:
-                if "nan" in element and element != "":
-                    return False
-            return True
-
         def is_easy_meal_nono(target_array):
-            # nan_cnt = target_array[-1].count("nan")
-            # if (3 < nan_cnt):
-            #     return True
-            # else:
-            #     return False
             indicator = target_array[-4]
             if (target_array[-4] == "nan" or target_array[-4] == r'\d{2,}'):
                 return True
@@ -140,6 +155,7 @@ class Gishik_thisweek(Shik_thisweek):
 
         def parse_meal_json_of_today(today_array):
             today_arr = today_array
+            seperator = "||||||||||||||||||||"
 
             meal_json = {
                 "breakfast": "", "lunch": "", "dinner": "", "easy_meal": ""
@@ -154,23 +170,39 @@ class Gishik_thisweek(Shik_thisweek):
             easy_meal = ""
             if (is_easy_meal_nono_flag == True):
                 meal_json['easy_meal'] = "X"
-                # easy_meal = corrected_arr[-1]
-                # corrected_arr = corrected_arr[:-1]
+
             else:
                 easy_meal = corrected_arr[-1]
                 corrected_arr = corrected_arr[:-1]
-                meal_json['easy_meal'] = makeup_string(easy_meal)
+                pretty_string = makeup_string(easy_meal, seperator)
+                meal_node = package_meal(
+                    pretty_string, seperator, _is_easymeal=True)
+                # meal_json['easy_meal'] = makeup_string(easy_meal, seperator)
+                # print("easy_meal")
+                # print(meal_json['easy_meal'])
+                meal_json['easy_meal'] = meal_node
 
             breakfast = corrected_arr[0]
             corrected_arr = corrected_arr[1:]
-            meal_json['breakfast'] = makeup_string(breakfast)
+            meal_node = package_meal(makeup_string(
+                breakfast, seperator), seperator, _is_easymeal=False)
+            meal_json['breakfast'] = meal_node
 
             dinner = corrected_arr[-1]
             corrected_arr = corrected_arr[:-1]
-            meal_json['dinner'] = makeup_string(dinner)
+            # meal_json['dinner'] = makeup_string(dinner, seperator)
+            meal_node = package_meal(makeup_string(
+                dinner, seperator), seperator, _is_easymeal=False)
+            meal_json['dinner'] = meal_node
 
             lunch = '\n\n'.join(corrected_arr)
-            meal_json['lunch'] = makeup_string(lunch)
+            # meal_json['lunch'] = makeup_string(lunch, seperator)
+
+            pretty_string = makeup_string(lunch, seperator)
+            meal_node = package_meal(
+                pretty_string, seperator, _is_easymeal=False)
+            meal_json['lunch'] = meal_node
+            print(meal_json)
 
             return meal_json
 
@@ -192,14 +224,9 @@ class Gishik_thisweek(Shik_thisweek):
                 column_data = df[column_name]
                 today_arr = parse_arr_from_df_col(column_data)
                 today_meal_json = parse_meal_json_of_today(today_arr)
+                # print(today_meal_json)
                 this_week_json_dict[today] = today_meal_json
         return this_week_json_dict
-
-    # def get_today_gishik(self):
-    #     day_of_this_week = datetime.now().strftime("%A")
-    #     this_week_json = self.get_gishik_json_of_this_week()
-    #     today_json =
-    #     print(day_of_this_week)
 
 
 class Hakshik_thisweek(Shik_thisweek):
@@ -313,17 +340,15 @@ def program_init():
     global gishik_week_instance
     global hakshik_week_instance
 
-    gyoshik_week_instance = Gyoshik_thisweek()
-    gyoshik_week_instance.update_me()
+    # gyoshik_week_instance = Gyoshik_thisweek()
+    # gyoshik_week_instance.update_me()
     gishik_week_instance = Gishik_thisweek()
     gishik_week_instance.update_me()
-    hakshik_week_instance = Hakshik_thisweek()
-    hakshik_week_instance.update_me()
+    # hakshik_week_instance = Hakshik_thisweek()
+    # hakshik_week_instance.update_me()
 
-    print("GOGO")
-
-    updated_json = get_week()
-    return parse_json_to_message_week(updated_json)
+    # updated_json = get_week()
+    # return parse_json_to_message_week(updated_json)
 
 
 def this_weekday():
@@ -342,17 +367,20 @@ def parse_json_to_message(json_data, today_of_week):
     today_gi = json_data['gi'].get(today_of_week)
 
     if (today_hak != ''):
-        hak_message = f'*학생식당*\n\n✨ 조식 ✨\n{today_hak["breakfast"]}\n\n☀ 중식 ☀\n{today_hak["lunch"]}\n\n🌙 석식 🌙\n{today_hak["dinner"]}\n\n\n'
+        hak_message = f'*학생식당*\n\n✨ 조식 ✨\n{today_hak["breakfast"]}\n\n☀ 중식 ☀\n{
+            today_hak["lunch"]}\n\n🌙 석식 🌙\n{today_hak["dinner"]}\n\n\n'
     else:
         hak_message = f'*학생식당*\n식사를 제공하지 않는 날입니다.\n'
     if (today_gyo != ''):
         today_gyo = today_gyo.get('breakfast').replace("\t\t", "").split('\n')
         today_gyo = [item for item in today_gyo if item != ""]
-        gyo_message = f'*교직원식당*\n\n✨ 조식 ✨\n{today_gyo[0]}\n{today_gyo[1]}\n\n☀ 중식 ☀\n{today_gyo[2]}\n(백반)\n{today_gyo[3]}\n\n(특식)\n{today_gyo[5]}\n\n\n🌙 석식 🌙\n{today_gyo[6]}\n{today_gyo[7]}\n\n\n'
+        gyo_message = f'*교직원식당*\n\n✨ 조식 ✨\n{today_gyo[0]}\n{today_gyo[1]}\n\n☀ 중식 ☀\n{
+            today_gyo[2]}\n(백반)\n{today_gyo[3]}\n\n(특식)\n{today_gyo[5]}\n\n\n🌙 석식 🌙\n{today_gyo[6]}\n{today_gyo[7]}\n\n\n'
     else:
         gyo_message = f'*교직원식당*\n식사를 제공하지 않는 날입니다.\n'
     if (today_gi != ''):
-        gi_message = f'*생활관식당*\n\n✨ 조식 ✨\n{today_gi["breakfast"]}\n\n☀ 중식 ☀\n{today_gi["lunch"]}\n\n🌙 석식 🌙\n{today_gi["dinner"]}\n\n🌭 간편식 🌭\n{today_gi["easy_meal"]}\n\n\n'
+        gi_message = f'*생활관식당*\n\n✨ 조식 ✨\n{today_gi["breakfast"]}\n\n☀ 중식 ☀\n{
+            today_gi["lunch"]}\n\n🌙 석식 🌙\n{today_gi["dinner"]}\n\n🌭 간편식 🌭\n{today_gi["easy_meal"]}\n\n\n'
     else:
         gi_message = f'*생활관식당*\n식사를 제공하지 않는 날입니다.\n'
     return f'✉ 학식왕 김인하 - {today()} 식단 ✉\n\n\n{hak_message}\n{gyo_message}\n{gi_message}식사 맛있게 하세요!'
@@ -366,37 +394,38 @@ def parse_json_to_message_week(json_data):
     return '\n\n\n\n--------------\n\n\n\n'.join(week_message)
 
 
-web = Flask(__name__)
-web.config['JSON_AS_ASCII'] = False
+program_init()
+# web = Flask(__name__)
+# web.config['JSON_AS_ASCII'] = False
 
 
-@web.get('/')
-def index():
-    return "GOGO"
+# @web.get('/')
+# def index():
+#     return "GOGO"
 
 
-@web.get('/init')
-def init():
-    res = program_init()
-    return res
+# @web.get('/init')
+# def init():
+#     res = program_init()
+#     return res
 
 
-@web.get('/get')
-def get_week():
-    where = request.args.get('where')
-    data = "ERROR"
-    if (where == "hak"):
-        data = hakshik_week_instance.get_shik(when="all")
-    elif (where == "gi"):
-        data = gishik_week_instance.get_shik(when="all")
-    elif (where == "gyo"):
-        data = gyoshik_week_instance.get_shik(when="all")
-    else:
-        data = {"hak": hakshik_week_instance.get_shik(when="all"), "gi":
-                gishik_week_instance.get_shik(when="all"), "gyo": gyoshik_week_instance.get_shik(when="all")}
-    data = str(data)
-    return data
+# @web.get('/get')
+# def get_week():
+#     where = request.args.get('where')
+#     data = "ERROR"
+#     if (where == "hak"):
+#         data = hakshik_week_instance.get_shik(when="all")
+#     elif (where == "gi"):
+#         data = gishik_week_instance.get_shik(when="all")
+#     elif (where == "gyo"):
+#         data = gyoshik_week_instance.get_shik(when="all")
+#     else:
+#         data = {"hak": hakshik_week_instance.get_shik(when="all"), "gi":
+#                 gishik_week_instance.get_shik(when="all"), "gyo": gyoshik_week_instance.get_shik(when="all")}
+#     data = str(data)
+#     return data
 
 
-if __name__ == "__main__":
-    web.run("0.0.0.0", port=5000, debug=False)
+# if __name__ == "__main__":
+#     web.run("0.0.0.0", port=5000, debug=False)
