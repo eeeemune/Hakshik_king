@@ -1,0 +1,1 @@
+export type cafeteria = "student"|"professor"|"dormitory";
