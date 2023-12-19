@@ -1,4 +1,5 @@
 import styled from "styled-components";
+import { DefaultTheme } from 'styled-components';
 import { cafeteria } from "../interface";
 
 interface CafeteriaSelectorProps {
@@ -32,6 +33,7 @@ const CafeteriaWrapper = styled.div`
   column-gap: 1rem;
 `;
 
+
 const CafeteriaStyled = styled.div<CafeteriaProps>`
 ${({ theme }) => theme.TEXT.default_bold};
 ${({ theme }) => theme.COLOR.black};
@@ -39,8 +41,7 @@ display: flex;
 align-items: center;
 height: 100%;
 line-height: 100%;
-/* background-color: gray; */
-${(props) => props._selected ? `border-bottom: 2px solid black` : `color:#C9C9C9`};
+${(props) => props._selected ? `border-bottom: 2px solid ${props.theme.COLOR.black}` : `color:#C9C9C9`};
 cursor: pointer;
 `;
 
