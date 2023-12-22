@@ -9,8 +9,8 @@ translator = models.Translator()
 gi = models.Gishik_thisweek()
 week_node_gi = gi.get_shik()
 
-hak = models.Hakshik_thisweek()
-week_node_hak = hak.get_shik()
+# hak = models.Hakshik_thisweek()
+# week_node_hak = hak.get_shik()
 
 gyo = models.Gyoshik_thisweek()
 week_node_gyo = gyo.get_shik()
@@ -81,5 +81,5 @@ def update(when_list, where, week_node):
 
 
 update(["breakfast", "lunch", "easy_meal", "dinner"], "gi", week_node_gi)
-update(["lunch"], "hak", week_node_hak)
+# update(["lunch"], "hak", week_node_hak)
 update(["breakfast", "lunch", "dinner"], "gyo", week_node_gyo)

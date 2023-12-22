@@ -14,14 +14,15 @@ interface CafeteriaProps {
 const CafeteriaSelector = ({ _change_cafeteria, _now_cafeteria }: CafeteriaSelectorProps) => {
     return (
         <CafeteriaWrapper>
-            <CafeteriaStyled onClick={()=>_change_cafeteria("student")} _selected={_now_cafeteria === "student"}>학생식당</CafeteriaStyled>
-            <CafeteriaStyled onClick={()=>_change_cafeteria("professor")} _selected={_now_cafeteria === "professor"}>교직원식당</CafeteriaStyled>
-            <CafeteriaStyled onClick={()=>_change_cafeteria("dormitory")} _selected={_now_cafeteria === "dormitory"}>생활관식당</CafeteriaStyled>
+            <CafeteriaStyled onClick={() => _change_cafeteria("student")} _selected={_now_cafeteria === "student"}>학생식당</CafeteriaStyled>
+            <CafeteriaStyled onClick={() => _change_cafeteria("professor")} _selected={_now_cafeteria === "professor"}>교직원식당</CafeteriaStyled>
+            <CafeteriaStyled onClick={() => _change_cafeteria("dormitory")} _selected={_now_cafeteria === "dormitory"}>생활관식당</CafeteriaStyled>
         </CafeteriaWrapper>
     );
 };
 
 const CafeteriaWrapper = styled.div`
+background-color: ${({ theme }) => theme.COLOR.background};
   width: 100vw;
   height: 2.5rem;
   position: fixed;
@@ -37,6 +38,7 @@ const CafeteriaWrapper = styled.div`
 const CafeteriaStyled = styled.div<CafeteriaProps>`
 ${({ theme }) => theme.TEXT.default_bold};
 ${({ theme }) => theme.COLOR.black};
+
 display: flex;
 align-items: center;
 height: 100%;

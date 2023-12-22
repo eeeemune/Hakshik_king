@@ -5,13 +5,15 @@ type color_config = {
     black: string,
     line_gray: string,
     disabled: string,
-    background: string
+    background: string,
+    background_gray: string
 }
 
 type text_config = {
     default: string,
     default_bold: string, 
-    large_bold: string
+    large_bold: string,
+    semilarge_bold:string
 }
 
 type style_variables_config = {
@@ -28,8 +30,10 @@ const COLOR: color_config = {
     orange: "#FF5C38",
     black: "#342D2C",
     line_gray: "#ECF0F2",
+    background_gray: "#E9E9E9",
     disabled: "#DEDEDE",
     background: "#F5F6F8"
+
 }
 
 const TEXT: text_config = {
@@ -38,17 +42,27 @@ const TEXT: text_config = {
     font-size: 1rem;
     font-weight: 400;
     line-height: 151.336%;
+    color: ${COLOR.black};
 `,
     default_bold: `
             font-family: 'Pretendard';
             font-size: 1rem;
             font-weight: 700;
             line-height: 151.336%;
+            color: ${COLOR.black};
+    `,
+    semilarge_bold: `
+            font-family: 'Pretendard';
+            font-size: 1.125rem;
+            font-weight: 700;
+            line-height: 151.336%;
+            color: ${COLOR.black};
     `,
     large_bold:`
     font-family: 'Pretendard';
     font-size: 1.5rem;
     font-weight: 700;
+    color: ${COLOR.black};
     `
 }
 

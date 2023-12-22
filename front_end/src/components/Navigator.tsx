@@ -3,7 +3,7 @@ import LOGO_CI from "../icons/LOGO_CI";
 
 const Navigator = () => {
     return (<StyleNavigator><LOGO_CI _height={"1.5rem"} />
-    <StyledTranslator>English</StyledTranslator></StyleNavigator>)
+        <StyledTranslator>English</StyledTranslator></StyleNavigator>)
 }
 
 const StyleNavigator = styled.div`
@@ -15,6 +15,7 @@ const StyleNavigator = styled.div`
     display: flex;
     align-items: center;
     justify-content: space-between;
+    position: fixed;
 `
 const StyledTranslator = styled.button`
     color: white;

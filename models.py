@@ -17,7 +17,8 @@ import deepl
 
 url = {
     'student': 'https://www.inha.ac.kr/kr/1072/subview.do',
-    'professor': 'https://www.inha.ac.kr/kr/1073/subview.do'
+    'professor': 'https://www.inha.ac.kr/kr/1073/subview.do',
+    'dormitory': 'https://dorm.inha.ac.kr/dorm/10136/subview.do'
 }
 
 
@@ -327,6 +328,7 @@ class Hakshik_thisweek(Shik_thisweek):
 
             index_to_parse = 2*day_of_week_idx + when_idx
 
+            print(soup)
             menu_html = soup.find_all("table")[index_to_parse].find_all('tr')
 
             menu_list = []
@@ -370,6 +372,7 @@ class Gyoshik_thisweek(Hakshik_thisweek):
                 day_of_week_idx = 4
 
             index_to_parse = day_of_week_idx
+            print(soup, index_to_parse)
 
             menu_html = soup.find_all("table")[index_to_parse].find_all('tr')
 
@@ -463,7 +466,7 @@ class Recipe:
         allergy_json = {"fork": False, "egg": False,
                         "beef": False, "chicken": False, "seafood": False}
         recipe_str = "".join(recipe)
-        if (-1 < recipe_str.find("돼지") or -1 < recipe_str.find("돈육") or -1 < recipe_str.find("겹살") or -1 < recipe_str.find("목살") or -1 < recipe_str.find("항정살") or -1 < recipe_str.find("소세지") or -1 < recipe_str.find("소시지") or -1 < recipe_str.find("비엔나") or -1 < recipe_str.find("스팸") or -1 < recipe_str.find("햄") or -1 < recipe_str.find("미니족") or -1 < recipe_str.find("장족") or -1 < recipe_str.find("베이컨")):
+        if (-1 < recipe_str.find("돼지") or -1 < recipe_str.find("돈육") or -1 < recipe_str.find("겹살") or -1 < recipe_str.find("목살") or -1 < recipe_str.find("항정살") or -1 < recipe_str.find("소세지") or -1 < recipe_str.find("소시지") or -1 < recipe_str.find("비엔나") or -1 < recipe_str.find("스팸") or -1 < recipe_str.find("햄") or -1 < recipe_str.find("돈까스") or -1 < recipe_str.find("크림") or -1 < recipe_str.find("미니족") or -1 < recipe_str.find("장족") or -1 < recipe_str.find("베이컨")):
             allergy_json["fork"] = True
         if (-1 < recipe_str.find("계란") or -1 < recipe_str.find("메추리알") or -1 < recipe_str.find("닭알") or -1 < recipe_str.find("수란")):
             allergy_json["egg"] = True

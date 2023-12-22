@@ -23,7 +23,15 @@ html{
     font-size: 16px;
 }
 body{
-    background-color: ${({theme})=>theme.COLOR.background};
+    background-color: ${({ theme }) => theme.COLOR.background};
+}
+body::-webkit-scrollbar {
+    width: 8px;
+    background: #217af4;
+    border-radius: 10px;
+}
+a{
+    text-decoration: none;
 }
 `
 
