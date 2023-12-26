@@ -1,0 +1,32 @@
+{
+    "nav": {
+        "lng": "한국어"
+    },
+    "main": {
+        "cafeteria1": "Student",
+        "cafeteria2": "Faculty",
+        "cafeteria3": "Dormitory",
+        "breakfast": "Breakfast",
+        "lunch": "Lunch",
+        "dinner": "Dinner",
+        "easymeal": "Snack",
+        "조식": "Breakfast",
+        "중식 백반": "Lunch",
+        "중식 특식": "Special Lunch",
+        "석식": "Dinner",
+        "뚝배기": "Ttookbaeki",
+        "일품식": "La carte meal",
+        "간편식": "Snack",
+        "한식": "Korean Food",
+        "카츠카츠A": "Fried A",
+        "카츠카츠B": "Fried B"
+    },
+    "review": {
+        "question_app": "Did you like Hakshikking?",
+        "good": "Good 😋",
+        "bad": "Bad 😢",
+        "question_menu": "Did you like today's menu?",
+        "menu_placeholder": "Please say anything about your think as using Hakshikking.",
+        "submit": "Send Review"
+    }
+}

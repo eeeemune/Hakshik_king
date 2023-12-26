@@ -4,10 +4,12 @@ import MenuCard from "./MenuCard";
 import styled from "styled-components";
 import { menuJson, menuJsonArr, menuCardProps } from "../interface"
 import MenuModal from "./MenuModal";
-
+import { useTranslation } from "react-i18next";
+import i18n from "../../../locales/i18n";
 
 
 const MenuCardsContainer = ({ _date, _when, _where }: menuCardProps) => {
+    const { t } = useTranslation();
     const api = new API();
     const [menuArr, setMenuArr] = useState<menuJsonArr>();
     const [isLoading, setIsLoading] = useState(true);
@@ -18,6 +20,7 @@ const MenuCardsContainer = ({ _date, _when, _where }: menuCardProps) => {
         api.getMenu(_date, _when, _where)
             .then((data) => {
                 setMenuArr(data);
+                console.log(data);
             })
             .then(() => {
                 setIsLoading(false);
@@ -32,18 +35,6 @@ const MenuCardsContainer = ({ _date, _when, _where }: menuCardProps) => {
 
     let cards = [];
 
-    const when_to_show = (_when: "breakfast" | "lunch" | "easymeal" | "dinner"): "조식" | "중식" | "석식" | "간편식" | "식사" => {
-        if (_when == "breakfast")
-            return "조식"
-        else if (_when == "lunch")
-            return "중식"
-        else if (_when == "dinner")
-            return "석식"
-        else if (_when == "easymeal")
-            return "간편식"
-        else
-            return "식사"
-    }
 
     const show_detail = (_category?: string): void => {
         if (_category == "NULL") setModal(<div></div>);
@@ -53,7 +44,7 @@ const MenuCardsContainer = ({ _date, _when, _where }: menuCardProps) => {
     for (let i = 0; i < categories.length; i++) {
         let category_menu = menuArr?.filter((target: menuJson) => target.category === categories[i]);
         let menu_name_arr = category_menu?.map((target: menuJson) => {
-            let name = target.name;
+            let name = i18n.language === "ko" ? target.name : target.name_eng;
             if (target.beef) name += '🐮';
             if (target.fork) name += '🐷';
             if (target.egg) name += '🥚';
@@ -62,21 +53,22 @@ const MenuCardsContainer = ({ _date, _when, _where }: menuCardProps) => {
             return name;
         }
         );
+
         cards.push(<MenuCard _category={categories[i]} _menuNameArr={menu_name_arr!} _show_detail={show_detail} />);
     }
 
     if (cards.length == 0) {
-        cards.push(<MenuNoneCard>학식이 제공되지 않는 날이에요.</MenuNoneCard>)
+        cards.push(<MenuNoneCard>{i18n.language === "ko" ? "학식이 제공되지 않는 날이에요." : "No food is served today."}</MenuNoneCard>)
     }
 
     if (isLoading) {
-        return <MenuNoneCard>데이터를 불러오는 중...</MenuNoneCard>;
+        return <MenuNoneCard>{i18n.language === "ko" ? "데이터를 불러오는 중..." : "Pulling menu data..."}</MenuNoneCard>;
     }
     else {
         return (<MealWrapper>
             {modal
             }
-            <MealTitle>{when_to_show(_when)}</MealTitle>
+            <MealTitle>{t(`main.${_when}`)}</MealTitle>
             {cards}
         </MealWrapper>);
     }

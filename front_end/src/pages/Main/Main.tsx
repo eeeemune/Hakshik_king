@@ -1,21 +1,29 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useTransition } from 'react';
 import styled from 'styled-components';
 import { PageStyle } from '../../styles/style_modules';
 import { cafeteria } from './interface';
 import CafeteriaSelector from './components/CafeteriaSelector';
 import DaySelector from './components/DaySelector';
-import { TODAY } from './components/getToday';
+import { today } from './components/getToday';
 import MenuCardsContainer from './components/MenuCardsContainer';
+import i18n from "../../locales/i18n";
+import Review from './components/Review';
 
 const Main = () => {
-    const [selected_cafeteria, setCafeteria] = useState<cafeteria>("student");
+    const change_language = (_target_lang: "ko" | "en") => {
+        i18n.changeLanguage(_target_lang);
+    }
+
+    const [selected_cafeteria, setCafeteria] = useState<cafeteria>("dormitory");
     const change_cafeteria = (_where: cafeteria) => {
         setCafeteria(_where);
     }
-    const [selected_day, setToday] = useState<string>(TODAY);
+    const [selected_day, setToday] = useState<string>(today(i18n.language));
     const changeDay = (_d: string) => {
         setToday(_d);
     }
+
+
 
     const [menu_to_show, setMenuToShow] = useState<JSX.Element[]>([]);
 
@@ -24,7 +32,6 @@ const Main = () => {
         else return ["breakfast", "lunch", "dinner", "easymeal"]
     }
 
-    // const menu_to_show = when_arr(selected_cafeteria).map((when) => <MenuCardsContainer _date={"2023-12-04"} _when={when} _where={selected_cafeteria} />);
     useEffect(() => {
         setMenuToShow(when_arr(selected_cafeteria).map((when) => <MenuCardsContainer _date={selected_day.split(' (')[0]} _when={when} _where={selected_cafeteria} />));
     }, [selected_cafeteria, selected_day]);
@@ -34,10 +41,9 @@ const Main = () => {
             <ColGap>
                 <CafeteriaSelector _change_cafeteria={change_cafeteria} _now_cafeteria={selected_cafeteria} />
                 <DaySelector _today={selected_day} _changeDay={changeDay} />
-                {/* <MenuCardsContainer _date={today.split(' (')[0]} _when='lunch' _where='dormitory' /> */}
                 {menu_to_show}
-
             </ColGap>
+            <Review></Review>
 
 
         </PageStyle>

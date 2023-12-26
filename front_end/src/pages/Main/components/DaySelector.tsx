@@ -1,7 +1,8 @@
 import styled, { useTheme } from "styled-components";
-import { TODAY, tomorrow, yesterday } from './getToday';
+import { today, tomorrow, yesterday } from './getToday';
 import ArrowRight from '../../../icons/ArrowRight';
 import ArrowLeft from '../../../icons/ArrowLeft';
+import i18n from "../../../locales/i18n";
 
 interface daySelectorProp {
     _today: string;
@@ -12,11 +13,11 @@ const DaySelector = ({ _today, _changeDay }: daySelectorProp) => {
     const theme = useTheme();
     return (<DayWrapper>
         <ElementPack>
-            <Yesterday onClick={_today == "2023-12-04 (월)" ? () => { } : () => { _changeDay(yesterday(_today)) }}><ArrowLeft _color={_today == "2023-12-04 (월)" ? theme.COLOR.disabled : theme.COLOR.black} /></Yesterday>
+            <Yesterday onClick={_today.split(' (')[0] == "2023-12-04" ? () => { } : () => { _changeDay(yesterday(_today = _today, i18n.language)) }}><ArrowLeft _color={_today.split(' (')[0] == "2023-12-04" ? theme.COLOR.disabled : theme.COLOR.black} /></Yesterday>
             <Today>
                 {_today}
             </Today>
-            <Tomorrow onClick={_today == TODAY ? () => { } : () => { _changeDay(tomorrow(_today)) }}><ArrowRight _color={_today == TODAY ? theme.COLOR.disabled : theme.COLOR.black} /></Tomorrow>
+            <Tomorrow onClick={_today == today(i18n.language) ? () => { } : () => { _changeDay(tomorrow(_today, i18n.language)) }}><ArrowRight _color={_today == today(i18n.language) ? theme.COLOR.disabled : theme.COLOR.black} /></Tomorrow>
         </ElementPack>
     </DayWrapper>)
 }

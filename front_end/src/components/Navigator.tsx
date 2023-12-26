@@ -1,9 +1,16 @@
 import styled from "styled-components";
 import LOGO_CI from "../icons/LOGO_CI";
+import i18n from "../locales/i18n";
+import { useTranslation } from "react-i18next";
 
 const Navigator = () => {
+    const change_language = (_target_lang: "ko" | "en") => {
+        i18n.changeLanguage(_target_lang);
+    }
+    const { t } = useTranslation();
+
     return (<StyleNavigator><LOGO_CI _height={"1.5rem"} />
-        <StyledTranslator>English</StyledTranslator></StyleNavigator>)
+        <StyledTranslator onClick={() => { change_language(i18n.language === 'en' ? 'ko' : 'en') }}>{t(`nav.lng`)}</StyledTranslator></StyleNavigator>)
 }
 
 const StyleNavigator = styled.div`

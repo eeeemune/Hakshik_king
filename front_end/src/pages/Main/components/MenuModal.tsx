@@ -1,6 +1,8 @@
 import styled from "styled-components";
 import { menuJsonArr, menuJson } from "../interface";
 import Hyperlink from "../../../icons/Hyperlink";
+import i18n from "../../../locales/i18n";
+import { useTranslation } from "react-i18next";
 
 interface menuModalProp {
     _menuArr: menuJson[] | undefined,
@@ -9,21 +11,22 @@ interface menuModalProp {
 
 
 const MenuModal = ({ _menuArr, _setModal }: menuModalProp) => {
+    const { t } = useTranslation();
     const MODAL_ELEMENT = _menuArr!.map((menu: menuJson) => <ModalElement>
-        <Title>{menu.name}{menu.fork && "🐷"}{menu.beef && "🐮"}{menu.egg && "🥚"}{menu.chicken && "🐔"}{menu.seafood && "🦐"}</Title>
-        <Discription>{menu.dscrpt}</Discription>
-        <RecipeGo href={menu.url || undefined}>레시피 바로가기<Hyperlink /></RecipeGo>
+        <Title>{i18n.language === "ko" ? menu.name : menu.name_eng}{menu.fork && "🐷"}{menu.beef && "🐮"}{menu.egg && "🥚"}{menu.chicken && "🐔"}{menu.seafood && "🦐"}</Title>
+        <Discription>{i18n.language === "ko" ? menu.dscrpt : menu.dscrpt_eng}</Discription>
+        <RecipeGo href={menu.url || undefined}>{i18n.language === "ko" ? "레시피 바로가기" : "Go to recipes"}<Hyperlink /></RecipeGo>
     </ModalElement>);
     return (
         <ModalWrapper>
             <TitleElementPack>
-                <Category>{_menuArr![0].category}</Category>
+                <Category>{t(`main.${_menuArr![0].category}`)}</Category>
                 <div>
                     {MODAL_ELEMENT}
                 </div>
 
             </TitleElementPack>
-            <CloseModal onClick={() => { _setModal(<div></div>) }}>확인</CloseModal>
+            <CloseModal onClick={() => { _setModal(<div></div>) }}>{i18n.language === "ko" ? "확인" : "Okay"}</CloseModal>
         </ModalWrapper>
 
     )

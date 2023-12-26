@@ -1,6 +1,9 @@
 import styled from "styled-components";
 import { DefaultTheme } from 'styled-components';
 import { cafeteria } from "../interface";
+import i18n from "../../../locales/i18n";
+import { useTransition } from "react";
+import { useTranslation } from "react-i18next";
 
 interface CafeteriaSelectorProps {
     _change_cafeteria: (_where: cafeteria) => void;
@@ -12,11 +15,13 @@ interface CafeteriaProps {
 }
 
 const CafeteriaSelector = ({ _change_cafeteria, _now_cafeteria }: CafeteriaSelectorProps) => {
+    const { t } = useTranslation();
     return (
         <CafeteriaWrapper>
-            <CafeteriaStyled onClick={() => _change_cafeteria("student")} _selected={_now_cafeteria === "student"}>학생식당</CafeteriaStyled>
-            <CafeteriaStyled onClick={() => _change_cafeteria("professor")} _selected={_now_cafeteria === "professor"}>교직원식당</CafeteriaStyled>
-            <CafeteriaStyled onClick={() => _change_cafeteria("dormitory")} _selected={_now_cafeteria === "dormitory"}>생활관식당</CafeteriaStyled>
+            <CafeteriaStyled onClick={() => _change_cafeteria("dormitory")} _selected={_now_cafeteria === "dormitory"}>{t(`main.cafeteria3`)}</CafeteriaStyled>
+            <CafeteriaStyled onClick={() => _change_cafeteria("student")} _selected={_now_cafeteria === "student"}>{t(`main.cafeteria1`)}</CafeteriaStyled>
+            <CafeteriaStyled onClick={() => _change_cafeteria("professor")} _selected={_now_cafeteria === "professor"}>{t(`main.cafeteria2`)}</CafeteriaStyled>
+
         </CafeteriaWrapper>
     );
 };
