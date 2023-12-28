@@ -11,6 +11,7 @@
     "@types/react": "^18.2.45",
     "@types/react-dom": "^18.2.18",
     "global": "^4.4.0",
+    "http-proxy-middleware": "^2.0.6",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-i18next": "^14.0.0",
@@ -47,5 +48,5 @@
   "devDependencies": {
     "dotenv": "^16.3.1"
   },
-  "proxy": "https://6z4jljqxgiu7rescscsywmmtim0ddzbo.lambda-url.ap-northeast-1.on.aws/https://6z4jljqxgiu7rescscsywmmtim0ddzbo.lambda-url.ap-northeast-1.on.aws/https://6z4jljqxgiu7rescscsywmmtim0ddzbo.lambda-url.ap-northeast-1.on.aws/"
+  "proxy": "https://rqkaoaapxc.execute-api.ap-northeast-1.amazonaws.com/v1/db"
 }

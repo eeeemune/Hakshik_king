@@ -17,13 +17,15 @@ export interface getMenuParams{
 
 export default class API{
     async getMenu(_date:string, _when:"breakfast"|"lunch"|"dinner"|"easymeal", _where:"student"|"dormitory"|"professor"){
-        const res = await fetch(`/`, {
+ 
+        const res = await fetch(`${process.env.REACT_APP_API_BASE_URL}`, {
             method: "POST",
-            mode:"no-cors",
+            mode:"cors",
             headers: {
               "Content-Type": "application/json",
             },
             body: JSON.stringify({
+                "statusCode":200,
                 "API":"get_menu",
                 "date": _date,
                 "when": _when,
@@ -39,7 +41,7 @@ export default class API{
     }
 
     async saveReview(_type:string, _content:string){
-        const res = await fetch(`/`, {
+        const res = await fetch("/", {
             method: "POST",
             mode:"no-cors",
             headers: {

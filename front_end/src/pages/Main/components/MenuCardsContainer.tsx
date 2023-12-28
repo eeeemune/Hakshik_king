@@ -19,8 +19,7 @@ const MenuCardsContainer = ({ _date, _when, _where }: menuCardProps) => {
         setIsLoading(true);
         api.getMenu(_date, _when, _where)
             .then((data) => {
-                setMenuArr(data);
-                console.log(data);
+                setMenuArr(data.body);
             })
             .then(() => {
                 setIsLoading(false);
