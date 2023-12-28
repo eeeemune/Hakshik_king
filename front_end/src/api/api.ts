@@ -43,7 +43,6 @@ export default class API{
     async saveReview(_type:string, _content:string){
         const res = await fetch(`${process.env.REACT_APP_API_BASE_URL}`, {
             method: "POST",
-            mode:"no-cors",
             headers: {
               "Content-Type": "application/json",
             },
