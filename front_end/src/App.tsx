@@ -15,7 +15,6 @@ function App() {
       <Navigator/>
       <Router>
         <Routes>
-          {/* <Route path={process.env.PATH_MAIN} element={<Main/>}></Route> */}
           <Route path='/' element={<Main/>}></Route>
         </Routes>
       </Router>
