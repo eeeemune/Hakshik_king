@@ -1,3 +1,6 @@
+![image](https://github.com/user-attachments/assets/6d40eed3-0bb0-48e0-bc4d-eba27951ad3e)
+
+
 ## 학식킹: 유학생을 위한 오늘의 학식 메뉴 설명 서비스
 
 ![image](https://github.com/user-attachments/assets/ead375d6-f91c-45f6-8f41-16a4ad3927b9)
